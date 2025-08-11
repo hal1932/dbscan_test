@@ -130,7 +130,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="dbscan.hpp" />
-    <ClInclude Include="vendor\nanoflann\nanoflann.hpp" />
     <ClInclude Include="vendor\octree\octree.h" />
     <ClInclude Include="vendor\octree\octree_container.h" />
   </ItemGroup>

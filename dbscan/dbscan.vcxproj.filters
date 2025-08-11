@@ -16,9 +16,6 @@
     <Filter Include="ヘッダー ファイル\vendor">
       <UniqueIdentifier>{96ac2c6a-44b6-4b70-a0ba-adc5ca13ffe7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ヘッダー ファイル\vendor\nanoflann">
-      <UniqueIdentifier>{43f511fb-0696-4a38-b88e-0e2b36047735}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ヘッダー ファイル\vendor\octree">
       <UniqueIdentifier>{25d16d74-92b8-4442-b556-b17448deed34}</UniqueIdentifier>
     </Filter>
@@ -26,9 +23,6 @@
   <ItemGroup>
     <ClInclude Include="dbscan.hpp">
       <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\nanoflann\nanoflann.hpp">
-      <Filter>ヘッダー ファイル\vendor\nanoflann</Filter>
     </ClInclude>
     <ClInclude Include="vendor\octree\octree.h">
       <Filter>ヘッダー ファイル\vendor\octree</Filter>

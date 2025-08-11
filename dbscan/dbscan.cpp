@@ -1,8 +1,6 @@
 #include "dbscan.hpp"
 
 #include <cstddef>
-//#include <nanoflann/nanoflann.hpp>
-#include "vendor/nanoflann/nanoflann.hpp"
 #include "vendor/octree/octree.h"
 
 #include <type_traits>
@@ -75,110 +73,6 @@ auto sort_clusters(std::vector<std::vector<size_t>>& clusters)
     {
         std::sort(cluster.begin(), cluster.end());
     }
-}
-
-
-template<int n_cols, typename DatasetAdaptor, typename Distance>
-auto dbscan(const DatasetAdaptor& adapt, float eps, int min_pts)
-{
-    eps *= eps;
-    using namespace nanoflann;
-    using  my_kd_tree_t = KDTreeSingleIndexAdaptor<Distance, decltype(adapt), n_cols>;
-
-    auto index = my_kd_tree_t(n_cols, adapt, KDTreeSingleIndexAdaptorParams(10));
-    index.buildIndex();
-
-    const auto n_points = adapt.kdtree_get_point_count();
-    auto visited  = std::vector<bool>(n_points);
-    auto clusters = std::vector<std::vector<size_t>>();
-    auto matches  = std::vector<std::pair<size_t, float>>();
-    auto sub_matches = std::vector<std::pair<size_t, float>>();
-
-    for(size_t i = 0; i < n_points; i++)
-    {
-        if (visited[i]) continue;
-
-        index.radiusSearch(adapt.elem_ptr(i), eps, matches, SearchParams(32, 0.f, false));
-        if (matches.size() < static_cast<size_t>(min_pts)) continue;
-        visited[i] = true;
-
-        auto cluster = std::vector({i});
-
-        while (matches.empty() == false)
-        {
-            auto nb_idx = matches.back().first;
-            matches.pop_back();
-            if (visited[nb_idx]) continue;
-            visited[nb_idx] = true;
-
-            index.radiusSearch(adapt.elem_ptr(nb_idx), eps, sub_matches, SearchParams(32, 0.f, false));
-
-            if (sub_matches.size() >= static_cast<size_t>(min_pts))
-            {
-                std::copy(sub_matches.begin(), sub_matches.end(), std::back_inserter(matches));
-            }
-            cluster.push_back(nb_idx);
-        }
-        clusters.emplace_back(std::move(cluster));
-    }
-    sort_clusters(clusters);
-    return clusters;
-}
-
-
-auto dbscan(const std::span<const point2>& data, float eps, int min_pts) -> std::vector<std::vector<size_t>>
-{
-    using Dataset = PointAdapter<point2>;
-    using Distance = nanoflann::L2_Simple_Adaptor<float, Dataset>;
-    const auto adapt = Dataset(data);
-    return dbscan<2, Dataset, Distance>(adapt, eps, min_pts);
-}
-
-
-auto dbscan(const std::span<const point3>& data, float eps, int min_pts) -> std::vector<std::vector<size_t>>
-{
-    using Dataset = PointAdapter<point3>;
-    using Distance = nanoflann::L2_Simple_Adaptor<float, Dataset>;
-    const auto adapt = Dataset(data);
-    return dbscan<3, Dataset, Distance>(adapt, eps, min_pts);
-}
-
-
-template <class T, typename _DistanceType = T>
-struct L2_Sphere_Adaptor {
-    typedef T ElementType;
-    typedef _DistanceType DistanceType;
-
-    const PointAdapter<sphere>& data_source;
-
-    L2_Sphere_Adaptor(const PointAdapter<sphere>& _data_source)
-        : data_source(_data_source) {}
-
-    inline DistanceType evalMetric(const T* a, const size_t b_idx, size_t size) const {
-        DistanceType result = DistanceType();
-        for (size_t i = 0; i < size; ++i) {
-            const DistanceType diff = a[i] - data_source.kdtree_get_pt(b_idx, i);
-            result += diff * diff;
-        }
-        return result;
-    }
-
-    template <typename U, typename V>
-    inline DistanceType accum_dist(const U a, const V b, const size_t idx, const ElementType* vec) const {
-        //return (a - b) * (a - b);
-        const auto d = (a - b) * (a - b);
-        const auto r = vec[3];
-        return d - r * 2.0f;
-    }
-};
-
-
-auto dbscan(const std::span<const sphere>& data, float eps, int min_pts) -> std::vector<std::vector<size_t>>
-{
-    using Dataset = PointAdapter<sphere>;
-    using Distance = L2_Sphere_Adaptor<float>;
-    const auto adapt = Dataset(data);
-    return dbscan<3, Dataset, Distance>(adapt, eps, min_pts);
 }
 
 

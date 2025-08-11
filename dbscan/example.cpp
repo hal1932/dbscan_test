@@ -127,53 +127,6 @@ auto label(const std::vector<std::vector<size_t>>& clusters, size_t n)
 }
 
 
-auto dbscan2d(const std::span<const float>& data, float eps, int min_pts)
-{
-    auto points = std::vector<point2>(data.size() / 2);
-
-    std::memcpy(points.data(), data.data(), sizeof(float) * data.size());
-
-    auto clusters = dbscan(points, eps, min_pts);
-    auto flat     = label (clusters, points.size());
-
-    for(size_t i = 0; i < points.size(); i++)
-    {
-        std::cout << points[i].x << ',' << points[i].y << ','  << flat[i] << '\n';
-    }
-}
-
-
-auto dbscan3d(const std::span<const float>& data, float eps, int min_pts)
-{
-    auto points = std::vector<point3>(data.size() / 3);
-
-    std::memcpy(points.data(), data.data(), sizeof(float) * data.size());
-
-    auto clusters = dbscan(points, eps, min_pts);
-    auto flat     = label (clusters, points.size());
-
-    for(size_t i = 0; i < points.size(); i++)
-    {
-        std::cout << points[i].x << ',' << points[i].y << ',' << points[i].z << ',' << flat[i] << '\n';
-    }
-}
-
-
-auto dbscan_sphere(const std::span<const float>& data, float eps, int min_pts)
-{
-    auto points = std::vector<sphere>(data.size() / 4);
-
-    std::memcpy(points.data(), data.data(), sizeof(float) * data.size());
-
-    auto clusters = dbscan(points, eps, min_pts);
-    auto flat = label(clusters, points.size());
-
-    for (size_t i = 0; i < points.size(); i++)
-    {
-        std::cout << points[i].x << ',' << points[i].y << ',' << points[i].z << ',' << flat[i] << '\n';
-    }
-}
-
 auto dbscan_aabb(const std::span<const float>& data, float eps, int min_pts)
 {
     auto count = data.size() / 5;
@@ -215,16 +168,5 @@ int main(int argc, char** argv)
     auto min_pts = 5;
     auto [values, dim] = read_values("sample2daabb.csv");
 
-    if(dim == 2)
-    {
-        dbscan2d(values, epsilon, min_pts);
-    }
-    else if (dim == 3)
-    {
-        dbscan3d(values, epsilon, min_pts);
-    }
-    else if (dim == 5)
-    {
-        dbscan_aabb(values, epsilon, min_pts);
-    }
+    dbscan_aabb(values, epsilon, min_pts);
 }
